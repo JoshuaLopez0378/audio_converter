@@ -91,13 +91,15 @@ def convert_spells_weapons_sfx(sfx, sfx_root_dir_inp):
         )
 
         if len(value["files"]) > 1 and len(value["file_mod_name"]) == 1:
+            print("MERGING AND CONVERTING")
+
             try:
                 for cur_sfx in value["files"]:
                     original_file_dir = f"{input_dir_mod}/{cur_sfx}"
                     print("ORIGINAL: ", original_file_dir)
-                    renamed_file_dir = ".".join(original_file_dir.split(".")[:-1])
+                    renamed_file_dir = f"{original_file_dir.split('.')[0]}.mp3"
                     print("RENAMED:", renamed_file_dir)
-                    rename(original_file_dir, renamed_file_dir)
+                    rename(original_file_dir, f"{renamed_file_dir}")
             except:
                 pass
             cur_sfx_init_list = ""
@@ -108,33 +110,50 @@ def convert_spells_weapons_sfx(sfx, sfx_root_dir_inp):
             a2 = f"{input_dir_mod}/{listdir(input_dir_mod)[1]}"
             sound = AudioSegment.from_mp3(a1)
             soundb = AudioSegment.from_mp3(a2)
-            combined = sound + soundb
+            combined = sound.overlay(soundb)
             combined = combined.set_channels(1)
             combined.export(
                 f"out_results/{value['audio_mod_dir'][0]}/{value['file_mod_name'][0]}",
                 format="wav",
             )
 
-            print("MERGING AND CONVERTING")
         elif len(value["files"]) > 1 and len(value["file_mod_name"]) > 1:
+            print("CONVERTING SUBDIR")
+
             # input subdir files
-            for cur_dir in input_dir_files:
+            for inc, cur_dir in enumerate(input_dir_files):
 
                 # if "." in cur_dir and :
 
                 if "." not in cur_dir:
                     cur_dir_sfx = f"{input_dir_mod}/{cur_dir}"
-                    # print(f"CURRENT DIR: {cur_dir_sfx}")
-                    # print(f"CURRENT FILES: {listdir(cur_dir_sfx)}")
-
-                    print("CONVERTING SUBDIR")
+                    print(f"CURRENT DIR: {cur_dir_sfx}")
+                    print(f"CURRENT FILES: {listdir(cur_dir_sfx)}")
+                    try:
+                        original_file_dir = f"{cur_dir_sfx}/{value['files'][inc]}"
+                        print("ORIGINAL: ", original_file_dir)
+                        renamed_file_dir = f"{original_file_dir.split('.')[0]}.mp3"
+                        print("RENAMED:", renamed_file_dir)
+                        rename(original_file_dir, f"{renamed_file_dir}")
+                    except:
+                        pass
+                    sound = AudioSegment.from_mp3(
+                        f"{cur_dir_sfx}/{value['files'][inc].split('.')[0]}.mp3"
+                    )
+                    sound = sound.set_channels(1)
+                    sound.export(
+                        f"out_results/{value['audio_mod_dir'][0]}/{value['file_mod_name'][inc]}",
+                        format="wav",
+                    )
         else:
+            print("CONVERTING IMMEDIATELY")
+
             try:
                 original_file_dir = f"{input_dir_mod}/{value['files'][0]}"
                 print("ORIGINAL: ", original_file_dir)
-                renamed_file_dir = ".".join(original_file_dir.split(".")[:-1])
+                renamed_file_dir = f"{original_file_dir.split('.')[0]}.mp3"
                 print("RENAMED:", renamed_file_dir)
-                rename(original_file_dir, renamed_file_dir)
+                rename(original_file_dir, f"{renamed_file_dir}")
             except:
                 pass
             sound = AudioSegment.from_mp3(renamed_file_dir)
@@ -143,7 +162,6 @@ def convert_spells_weapons_sfx(sfx, sfx_root_dir_inp):
                 f"out_results/{value['audio_mod_dir'][0]}/{value['file_mod_name'][0]}",
                 format="wav",
             )
-            print("CONVERTING IMMEDIATELY")
 
         print(" ============== ")
 
